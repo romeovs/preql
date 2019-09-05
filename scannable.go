@@ -3,6 +3,7 @@ package preql
 import (
 	"go/types"
 	"reflect"
+	"strings"
 
 	"golang.org/x/tools/go/packages"
 )
@@ -75,4 +76,9 @@ func parseStructFields(strct *types.Struct) map[string]string {
 // Returns the empty string if no tag was matched.
 func sqlTag(tag string) string {
 	return reflect.StructTag(tag).Get("sql")
+}
+
+// Receiver returns the receiver name of the scannable type.
+func (t ScannableType) Receiver() string {
+	return strings.ToLower(t.Name)[0:1]
 }

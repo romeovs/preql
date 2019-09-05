@@ -5,7 +5,9 @@ import (
 	"go/ast"
 	"go/types"
 	"regexp"
+	"strings"
 
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -19,7 +21,7 @@ type Query struct {
 	QueryString string
 
 	// BindArgs are the arguments to the function query.
-	BindArgs map[string]string
+	BindArgs map[string]interface{}
 
 	// Args are the arguments of the function.
 	Args []Arg
@@ -83,8 +85,8 @@ func parseQuery(doc string) (string, string, bool) {
 }
 
 // parseBindArgs parses the function args and returns a map of named query arg to variable names.
-func parseBindArgs(fn *ast.FuncDecl, info *types.Info) map[string]string {
-	res := make(map[string]string)
+func parseBindArgs(fn *ast.FuncDecl, info *types.Info) map[string]interface{} {
+	res := make(map[string]interface{})
 
 	for _, p := range fn.Type.Params.List {
 		if len(p.Names) < 1 {
@@ -147,4 +149,57 @@ func typeName(expr ast.Expr) string {
 		fmt.Printf("%T\n", v)
 		return ""
 	}
+}
+
+func (q Query) Params() (string, error) {
+	bound, params, err := sqlx.BindNamed(sqlx.DOLLAR, q.QueryString, q.BindArgs)
+	if err != nil {
+		return "", fmt.Errorf("could not create bound query: %s", err)
+	}
+
+	strs, err := toStrings(params)
+	if err != nil {
+		return "", err
+	}
+
+	ctx := ctxName(q.Args)
+	args := append([]string{ctx, `"` + simplifySQL(bound) + `"`}, strs...)
+
+	return strings.Join(args, ", "), nil
+}
+
+func toStrings(x []interface{}) ([]string, error) {
+	res := make([]string, len(x))
+	for i, v := range x {
+		if s, ok := v.(string); ok {
+			res[i] = s
+			continue
+		}
+		return nil, fmt.Errorf("Got non-string arg %s", v)
+	}
+
+	return res, nil
+}
+
+func simplifySQL(query string) string {
+	return strings.Join(strings.Fields(query), " ")
+}
+
+func ctxName(args []Arg) string {
+	for _, arg := range args {
+		if arg.TypeName == "context.Context" {
+			return arg.Name
+		}
+	}
+
+	return "context.Background()"
+}
+
+func (q Query) Arguments() string {
+	args := make([]string, 0, len(q.Args))
+	for _, arg := range q.Args {
+		args = append(args, arg.Name+" "+arg.TypeName)
+	}
+
+	return strings.Join(args, ", ")
 }

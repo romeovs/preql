@@ -2,16 +2,20 @@ package preql
 
 import (
 	"fmt"
+	"path"
 
 	"golang.org/x/tools/go/packages"
 )
 
 var (
-	cfg = &packages.Config{Mode: packages.NeedFiles | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax}
+	cfg = &packages.Config{Mode: packages.NeedName | packages.NeedFiles | packages.NeedFiles | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax}
 )
 
 // Package contains the information
 type Package struct {
+	Name           string
+	Path           string
+	Dir            string
 	ScannableTypes []*ScannableType
 	Queries        []*Query
 }
@@ -28,6 +32,9 @@ func Load(pkgpath string) (*Package, error) {
 	}
 
 	return &Package{
+		Name:           pkgs[0].Name,
+		Path:           pkgs[0].PkgPath,
+		Dir:            path.Dir(pkgs[0].GoFiles[0]),
 		ScannableTypes: parseScannableTypes(pkgs[0]),
 		Queries:        parseQueries(pkgs[0]),
 	}, nil
