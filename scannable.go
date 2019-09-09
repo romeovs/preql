@@ -20,11 +20,16 @@ type ScannableType struct {
 // parseScannableTypes parses all scannable types and returns them, omitting types that
 // are not scannable.
 func parseScannableTypes(pkg *packages.Package) []*ScannableType {
-	resp := make([]*ScannableType, 0, len(pkg.TypesInfo.Types))
+	byName := make(map[string]*ScannableType)
 	for _, typ := range pkg.TypesInfo.Types {
 		if t := parseScannableType(typ); t != nil {
-			resp = append(resp, t)
+			byName[t.Name] = t
 		}
+	}
+
+	resp := make([]*ScannableType, 0, len(byName))
+	for _, t := range byName {
+		resp = append(resp, t)
 	}
 
 	return resp
