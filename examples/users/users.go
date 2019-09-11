@@ -21,11 +21,26 @@ type Repository struct {
 }
 
 // FindUserByUsername finds a user with the given username.
+// Returns nil if no user is found.
 //
 // sql:
 //   SELECT * FROM users
 //     WHERE lower(username) = lower(:username)
 //     LIMIT 1
 func (r Repository) FindUserByUsername(ctx context.Context, username string) (*User, error) {
-	return nil, nil
+	rows, err := preqlFindUserByUsername(r.sql, ctx, username)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	user := new(User)
+	err = user.Scan(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
