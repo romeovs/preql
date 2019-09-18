@@ -56,6 +56,30 @@ func ({{.Receiver}} *{{.Name}}) ScanOne(rows *sql.Rows) error {
 
   return {{.Receiver}}.Scan(rows)
 }
+
+// to{{.Name}} tries to scan the first row of rows into a new {{.Name}}.
+// It checks err first to see if there were sql errors first and passes on the error.
+// If err is sql.ErrNoRows, to{{.Name}} returns nil, nil.
+// This is a convenient helper to wrap preql query functions, eg.
+//
+//     {{.Receiver}}, err := to{{.Name}}(preqlFind{{.Name}}(r.sql, ctx))
+//
+func to{{.Name}}(rows *sql.Rows, err error) (*{{.Name}}, error) {
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	{{.Receiver}} := new({{.Name}})
+	err = {{.Receiver}}.Scan(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return {{.Receiver}}, nil
+}
 {{- end }}
 
 {{- range .Queries }}
