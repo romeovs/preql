@@ -3,9 +3,9 @@
 package users
 
 import (
-  "context"
+	"context"
 
-  "github.com/romeovs/preql/sql"
+	"github.com/romeovs/preql/sql"
 )
 
 // Scan scans the columns of the current row of rows into u.
@@ -43,7 +43,7 @@ func (u *User) ScanOne(rows *sql.Rows) error {
 		return sql.ErrNoRows
 	}
 
-  return u.Scan(rows)
+	return u.Scan(rows)
 }
 
 // toUser tries to scan the first row of rows into a new User.
@@ -61,7 +61,7 @@ func toUser(rows *sql.Rows, err error) (*User, error) {
 		return nil, err
 	}
 
-  u := new(User)
+	u := new(User)
 	err = u.Scan(rows)
 	if err != nil {
 		return nil, err
