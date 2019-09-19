@@ -11,9 +11,9 @@ var templ = template.Must(template.New("template").Parse(strings.Trim(`
 package {{.Name}}
 
 import (
-  "context"
+	"context"
 
-  "github.com/romeovs/preql/sql"
+	"github.com/romeovs/preql/sql"
 )
 
 {{- range .ScannableTypes }}
