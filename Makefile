@@ -10,7 +10,7 @@ build: $(BIN)/preql
 bin/preql: $(GO_FILES)
 	@$m "Building preql..."
 	@mkdir -p $(BIN)
-	@go build -o $(BIN)/preql ./cmd/main.go
+	@go build -o $(BIN)/preql ./preql/main.go
 
 examples: bin/preql
 	@$m "Running examples"
