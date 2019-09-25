@@ -45,6 +45,6 @@ func main() {
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s <package name>\n\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "Builds scanners and queries for all relevant types and methods in the specified package")
+	fmt.Fprintf(os.Stderr, "Builds scanners and queries for all relevant types and methods in the specified package\n\n")
 	flag.PrintDefaults()
 }
